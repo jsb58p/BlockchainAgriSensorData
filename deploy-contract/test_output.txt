@@ -1,0 +1,36 @@
+No files changed, compilation skipped
+
+Ran 24 tests for contracts/AgriSensorData.t.sol:AgriSensorDataTest
+[PASS] test_AdminCanGrantRole() (gas: 38212)
+[PASS] test_AdminCanRevokeRole() (gas: 23525)
+[PASS] test_AnomalyDetectedForExtremeMoisture() (gas: 202384)
+[PASS] test_AnomalyDetectedForExtremeTemperature() (gas: 202313)
+[PASS] test_EdgeCaseExtremeNegativeTemperature() (gas: 202668)
+[PASS] test_EventEmittedOnSensorSubmit() (gas: 199851)
+[PASS] test_MultipleEventsInBatch() (gas: 391041)
+[PASS] test_NegativeTemperatureAllowed() (gas: 199380)
+[PASS] test_NonAdminCannotGrantRole() (gas: 17851)
+[PASS] test_QueryCropEventsByFarm() (gas: 420889)
+[PASS] test_QueryReadingsByFarm() (gas: 546924)
+[PASS] test_QuerySupplyChainStages() (gas: 487403)
+[PASS] test_RecordCropEvent() (gas: 165974)
+[PASS] test_RecordSupplyChainStage() (gas: 188415)
+[PASS] test_RevertBatchArrayLengthMismatch() (gas: 16972)
+[PASS] test_RevertBatchWithInvalidDataInMiddle() (gas: 206195)
+[PASS] test_RevertDuplicateDataHash() (gas: 200017)
+[PASS] test_RevertInvalidHumidity() (gas: 13914)
+[PASS] test_RevertInvalidSoilMoisture() (gas: 13831)
+[PASS] test_RevertUnauthorizedDevice() (gas: 13773)
+[PASS] test_RevertUnauthorizedFarmer() (gas: 14149)
+[PASS] test_RevertUnauthorizedSupplyChain() (gas: 14037)
+[PASS] test_SubmitBatchReadings() (gas: 551320)
+[PASS] test_SubmitValidSensorReading() (gas: 203606)
+Suite result: ok. 24 passed; 0 failed; 0 skipped; finished in 1.07ms (1.54ms CPU time)
+
+Ran 3 tests for contracts/Counter.t.sol:CounterTest
+[PASS] testFuzz_Inc(uint8) (runs: 256, μ: 172800, ~: 90309)
+[PASS] test_IncByZero() (gas: 8370)
+[PASS] test_InitialValue() (gas: 7556)
+Suite result: ok. 3 passed; 0 failed; 0 skipped; finished in 31.16ms (30.92ms CPU time)
+
+Ran 2 test suites in 32.77ms (32.22ms CPU time): 27 tests passed, 0 failed, 0 skipped (27 total tests)

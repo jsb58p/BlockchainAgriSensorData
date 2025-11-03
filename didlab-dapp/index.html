@@ -405,6 +405,15 @@
         </div>
         <button id="btnRevoke" class="primary">Revoke Role</button>
       </div>
+      <div class="card">
+        <h3>Emergency Controls</h3>
+        <p class="muted small">Only admin can pause/unpause the contract.</p>
+        <div class="row">
+          <button id="btnPause" class="primary">⏸️ Pause Contract</button>
+          <button id="btnUnpause" class="primary">▶️ Unpause Contract</button>
+        </div>
+        <div id="pauseStatus" style="margin-top: 12px; padding: 12px; border-radius: 8px;"></div>
+      </div>
     </div>
 
     <!-- LOG -->
@@ -578,6 +587,20 @@
           { name: "role", type: "bytes32" },
           { name: "account", type: "address" }
         ],
+        outputs: []
+      },
+      {
+        type: "function",
+        name: "pause",
+        stateMutability: "nonpayable",
+        inputs: [],
+        outputs: []
+      },
+      {
+        type: "function",
+        name: "unpause",
+        stateMutability: "nonpayable",
+        inputs: [],
         outputs: []
       },
       {
@@ -1167,6 +1190,48 @@
     el("btnRevoke").onclick = async () => {
       try {
         await revokeRole();
+      } catch (e) {
+        logErr(e.shortMessage || e.message || e);
+      }
+    };
+
+    el("btnPause").onclick = async () => {
+      try {
+        const hash = await walletClient.writeContract({
+          address: contract,
+          abi: SENSOR_ABI,
+          functionName: "pause",
+          args: [],
+          account,
+          gas: 100000n,
+          gasPrice: 20000000000n
+        });
+        
+        logWarn(`Pause tx: ${hash}`);
+        const rcpt = await publicClient.waitForTransactionReceipt({ hash });
+        logOk(`✓ Contract paused in block ${rcpt.blockNumber}`);
+        el("pauseStatus").innerHTML = '<span class="warn">⚠️ Contract is PAUSED</span>';
+      } catch (e) {
+        logErr(e.shortMessage || e.message || e);
+      }
+    };
+
+    el("btnUnpause").onclick = async () => {
+      try {
+        const hash = await walletClient.writeContract({
+          address: contract,
+          abi: SENSOR_ABI,
+          functionName: "unpause",
+          args: [],
+          account,
+          gas: 100000n,
+          gasPrice: 20000000000n
+        });
+        
+        logWarn(`Unpause tx: ${hash}`);
+        const rcpt = await publicClient.waitForTransactionReceipt({ hash });
+        logOk(`✓ Contract unpaused in block ${rcpt.blockNumber}`);
+        el("pauseStatus").innerHTML = '<span class="ok">✓ Contract is ACTIVE</span>';
       } catch (e) {
         logErr(e.shortMessage || e.message || e);
       }

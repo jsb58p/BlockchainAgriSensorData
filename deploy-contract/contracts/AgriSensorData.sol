@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 
 /**
  * @title AgriSensorData
@@ -14,12 +15,16 @@ import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
  * - Crop lifecycle tracking
  * - Supply chain traceability
  */
-contract AgriSensorData is AccessControl {
+contract AgriSensorData is AccessControl, Pausable {
     // Role definitions
     bytes32 public constant DEVICE_ROLE = keccak256("DEVICE_ROLE");
     bytes32 public constant FARMER_ROLE = keccak256("FARMER_ROLE");
     bytes32 public constant SUPPLY_CHAIN_ROLE = keccak256("SUPPLY_CHAIN_ROLE");
     bytes32 public constant RESEARCHER_ROLE = keccak256("RESEARCHER_ROLE");
+
+    // Security parameters
+    uint256 public constant SUBMISSION_COOLDOWN = 60; // seconds between submissions
+    uint256 public constant MAX_BATCH_SIZE = 100; // max readings per batch
 
     // Custom errors
     error UnauthorizedDevice();
@@ -67,6 +72,7 @@ contract AgriSensorData is AccessControl {
     mapping(uint256 => uint256[]) public farmToReadings;    // farmId => reading indices
     mapping(uint256 => uint256[]) public farmToCropEvents;  // farmId => crop event indices
     mapping(uint256 => uint256[]) public productToStages;   // productId => supply chain indices
+    mapping(address => uint256) public lastSubmissionTime;  // device => last submission timestamp
 
     // Events
     event SensorDataSubmitted(
@@ -119,7 +125,12 @@ contract AgriSensorData is AccessControl {
         int16 temperature,
         uint16 soilMoisture,
         uint16 humidity
-    ) external onlyRole(DEVICE_ROLE) {
+    ) external onlyRole(DEVICE_ROLE) whenNotPaused {
+        // Rate limiting check
+        if (block.timestamp < lastSubmissionTime[msg.sender] + SUBMISSION_COOLDOWN) {
+            revert("Cooldown period active");
+        }
+        lastSubmissionTime[msg.sender] = block.timestamp;
         // Validate data ranges
         if (soilMoisture > 1000 || humidity > 1000) revert InvalidSensorData();
 
@@ -169,11 +180,23 @@ contract AgriSensorData is AccessControl {
         int16[] calldata temperatures,
         uint16[] calldata moistures,
         uint16[] calldata humidities
-    ) external onlyRole(DEVICE_ROLE) {
+    ) external onlyRole(DEVICE_ROLE) whenNotPaused {
         uint256 len = farmIds.length;
+        
+        // Batch size limit
+        if (len > MAX_BATCH_SIZE) {
+            revert("Batch size exceeds maximum");
+        }
+        
         if (len != temperatures.length || len != moistures.length || len != humidities.length) {
             revert ArrayLengthMismatch();
         }
+        
+        // Rate limiting check
+        if (block.timestamp < lastSubmissionTime[msg.sender] + SUBMISSION_COOLDOWN) {
+            revert("Cooldown period active");
+        }
+        lastSubmissionTime[msg.sender] = block.timestamp;
 
         for (uint256 i = 0; i < len; ) {
             if (moistures[i] > 1000 || humidities[i] > 1000) revert InvalidSensorData();
@@ -355,5 +378,21 @@ contract AgriSensorData is AccessControl {
         if (humidity > 950) {
             emit AnomalyDetected(readingId, msg.sender, "EXTREME_HUMIDITY");
         }
+    }
+
+    /**
+     * @dev Pause all contract operations (emergency stop)
+     * Only admin can pause
+     */
+    function pause() external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _pause();
+    }
+
+    /**
+     * @dev Unpause contract operations
+     * Only admin can unpause
+     */
+    function unpause() external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _unpause();
     }
 }
