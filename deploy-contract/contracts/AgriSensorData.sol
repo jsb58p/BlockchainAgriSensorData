@@ -247,7 +247,7 @@ contract AgriSensorData is AccessControl, Pausable {
         string calldata eventType,
         string calldata notes,
         bytes32 linkedDataHash
-    ) external onlyRole(FARMER_ROLE) {
+    ) external onlyRole(FARMER_ROLE) whenNotPaused {
         uint256 eventId = cropEvents.length;
         cropEvents.push(CropEvent({
             farmId: farmId,
@@ -274,7 +274,7 @@ contract AgriSensorData is AccessControl, Pausable {
         string calldata stage,
         string calldata location,
         bytes32 linkedDataHash
-    ) external onlyRole(SUPPLY_CHAIN_ROLE) {
+    ) external onlyRole(SUPPLY_CHAIN_ROLE) whenNotPaused {
         uint256 stageId = supplyChainStages.length;
         supplyChainStages.push(SupplyChainStage({
             productId: productId,
